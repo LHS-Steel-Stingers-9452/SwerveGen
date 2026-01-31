@@ -10,6 +10,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -29,12 +30,20 @@ public class RobotContainer {
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
+     private final SwerveRequest.RobotCentric robotRelativeDrive =
+      new SwerveRequest.RobotCentric()
+          .withDeadband(MaxSpeed * 0.1)
+          .withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+          .withDriveRequestType(
+              DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
     private final CommandXboxController joystick = new CommandXboxController(0);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+
+    public final VisionPros visionpros = new VisionPros(drivetrain);
 
     public RobotContainer() {
         configureBindings();
@@ -74,6 +83,15 @@ public class RobotContainer {
         // Reset the field-centric heading on left bumper press.
         joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
+        // vision bindings, for driver( he doesn't even use it T-T )
+
+    //lock onto april tag
+         joystick
+            .rightTrigger()
+            .whileTrue(aimAtTarget(drivetrain));
+               
+                    
+
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 
@@ -94,5 +112,23 @@ public class RobotContainer {
             // Finally idle for the rest of auton
             drivetrain.applyRequest(() -> idle)
         );
+    }
+
+    public Command aimAtTarget(CommandSwerveDrivetrain drivetrain) {
+        return  drivetrain.applyRequest(
+                    () -> {
+                        double kP = .03; //kp was .0176
+                        double targetingAngularVelocity = LimelightHelpers.getTX("limelight-left") * kP;
+                        targetingAngularVelocity *= MaxAngularRate;
+                        targetingAngularVelocity *= -1.0;
+                        return drive
+                            .withVelocityX(
+                                -joystick.getLeftY()
+                                    * MaxSpeed) // Drive forward with negative Y (forward)
+                            .withVelocityY(
+                                -joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                            .withRotationalRate(
+                                targetingAngularVelocity); // Drive counterclockwise with negative X (left)
+                    });
     }
 }
