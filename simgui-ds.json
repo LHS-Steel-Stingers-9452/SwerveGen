@@ -1,7 +1,7 @@
 {
-  "Keyboard 0 Settings": {
+  "Joysticks": {
     "window": {
-      "visible": true
+      "visible": false
     }
   },
   "keyboardJoysticks": [
@@ -30,7 +30,7 @@
         67,
         86,
         -1,
-        90
+        77
       ],
       "povConfig": [
         {
@@ -60,7 +60,7 @@
       "axisCount": 2,
       "buttonCount": 4,
       "buttonKeys": [
-        77,
+        -1,
         44,
         46,
         47
