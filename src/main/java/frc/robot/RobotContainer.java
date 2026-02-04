@@ -197,56 +197,17 @@ public class RobotContainer {
      public Command aimAtHub(CommandSwerveDrivetrain drivetrain) {
         return  drivetrain.applyRequest(
                     () -> {
-                        
-
-                        // var currentPose = drivetrain.getState().Pose;
-                        // var currentAngle = currentPose.getRotation().getRadians();
-                        
-                        // var error = currentAngle - angle;
-                        
-                        // SmartDashboard.putNumber("angle", Math.toDegrees(angle));
-                        // SmartDashboard.putNumber("current angle", Math.toDegrees(currentAngle));
-                        // SmartDashboard.putNumber("error", error);
-
-                        // var currentPose = drivetrain.getState().Pose;
-
-                        // var poseX = currentPose.getX();
-                        // var poseY = currentPose.getY();
-
-                        // var targetX = 12;
-                        // var targetY = 4;
-
-                        // var angle = Math.atan2(poseY - targetY, poseX - targetX);
-
-                        // SmartDashboard.putNumber("angle", Math.toDegrees(angle));
-
-                        // var targetPose = new Pose2d(12, 4, Rotation2d.fromRadians(angle));
-                        // var transform = targetPose.minus(currentPose);
-                        // var error = transform.getRotation().getRadians();
-                        // SmartDashboard.putNumber("error", error);
-
                         var currentPose = drivetrain.getState().Pose;
-
-                        var targetTranslation = new Translation2d(13, 4);
-
+                        var targetTranslation = new Translation2d(13, 4); // We got (12, 4) IRL but (13, 4) works better in sim, we can play with it
                         var direction =
                             targetTranslation.minus(currentPose.getTranslation());
-
                         var error =
                             direction.getAngle()
                                 .minus(currentPose.getRotation())
                                 .getRadians();
 
-                       
-
-                        double kP = 50; //kp was .0176
+                        double kP = 50; // TUNE ON REAL ROBOT - START SMALL
                         double targetingAngularVelocity = error * kP;
-                        // targetingAngularVelocity *= MaxAngularRate;
-                        // targetingAngularVelocity *= -1.0;
-
-                        // var angle = Math.atan2(, )
-
-                        
                         return drive
                             .withVelocityX(
                                 -joystick.getLeftY()
