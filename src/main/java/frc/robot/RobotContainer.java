@@ -9,7 +9,9 @@ import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -195,33 +197,17 @@ public class RobotContainer {
      public Command aimAtHub(CommandSwerveDrivetrain drivetrain) {
         return  drivetrain.applyRequest(
                     () -> {
-                        
-
                         var currentPose = drivetrain.getState().Pose;
-                        var currentAngle = currentPose.getRotation().getRadians();
-                        var poseX = currentPose.getX();
-                        var poseY = currentPose.getY();
+                        var targetTranslation = new Translation2d(13, 4); // We got (12, 4) IRL but (13, 4) works better in sim, we can play with it
+                        var direction =
+                            targetTranslation.minus(currentPose.getTranslation());
+                        var error =
+                            direction.getAngle()
+                                .minus(currentPose.getRotation())
+                                .getRadians();
 
-                        var targetX = 12;
-                        var targetY = 4;
-
-                        var angle = Math.atan2(poseX - targetX, poseY - targetY);
-                        var error = currentAngle - angle;
-                        
-                        SmartDashboard.putNumber("angle", angle);
-                        SmartDashboard.putNumber("current angle", currentAngle);
-                        SmartDashboard.putNumber("error", error);
-
-                       
-
-                        double kP = .35; //kp was .0176
+                        double kP = 50; // TUNE ON REAL ROBOT - START SMALL
                         double targetingAngularVelocity = error * kP;
-                        // targetingAngularVelocity *= MaxAngularRate;
-                        // targetingAngularVelocity *= -1.0;
-
-                        // var angle = Math.atan2(, )
-
-                        
                         return drive
                             .withVelocityX(
                                 -joystick.getLeftY()
