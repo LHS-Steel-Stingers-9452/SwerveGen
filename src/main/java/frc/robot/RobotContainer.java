@@ -8,8 +8,12 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -21,9 +25,9 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Kicker;
 import frc.robot.subsystems.Shooter;
-import frc.robot.subsystems.Intake; 
+import frc.robot.subsystems.Intake;
 
-
+@Logged
 
 public class RobotContainer {
 //Subsystem Imports
@@ -57,9 +61,23 @@ public class RobotContainer {
 
     public final VisionPros visionpros = new VisionPros(drivetrain);
 
+    
+    private final SendableChooser<Command> autoChooser;
+
     public RobotContainer() {
+
         configureBindings();
         // LimelightHelpers.SetRobotOrientation("limelight-left",drivetrain.getState().Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
+        //Auto Selection is already handled by Glass.
+        autoChooser = AutoBuilder.buildAutoChooser();
+
+         //See if you need this if the options for the autos are not popping up.
+        //  autoChooser.setDefaultOption("1", Commands.print("1"));
+        //  autoChooser.addOption("BlueTopAuto", getAutonomousCommand());
+        //  autoChooser.addOption("BlueBottomAuto", getAutonomousCommand());
+        //  autoChooser.addOption("1", getAutonomousCommand());
+
+        SmartDashboard.putData("Auto Chooser", autoChooser);
     }
 
     private void configureBindings() {
@@ -94,7 +112,7 @@ public class RobotContainer {
         joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // Reset the field-centric heading on left bumper press.
-        joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        joystick.y().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
         // vision bindings, for driver( he doesn't even use it T-T )
 
@@ -105,8 +123,16 @@ public class RobotContainer {
         joystick 
             .rightBumper()
             .whileTrue(aimAtHub(drivetrain));
+        
+    //X Lock
+        joystick.a()
+        .whileTrue(drivetrain.applyRequest(() -> brake));
                
-                    
+    // Intake Button
+        joystick.leftTrigger()
+        .whileTrue(intake.setVoltage(-4));
+    
+    // Shooter Button
 
         drivetrain.registerTelemetry(logger::telemeterize);
 
@@ -153,25 +179,32 @@ public class RobotContainer {
             SmartDashboard.putData("intake set voltage 0V", intake.setVoltage(0));
             SmartDashboard.putData("intake set voltage 3V", intake.setVoltage(3));
              //and so on so forth..
+             
     }
 
+    public void autoInit(){
+                drivetrain.seedFieldCentric();
+                
+             }
+
     public Command getAutonomousCommand() {
+        return autoChooser.getSelected();
         // Simple drive forward auton
-        final var idle = new SwerveRequest.Idle();
-        return Commands.sequence(
-            // Reset our field centric heading to match the robot
-            // facing away from our alliance station wall (0 deg).
-            drivetrain.runOnce(() -> drivetrain.seedFieldCentric(Rotation2d.kZero)),
-            // Then slowly drive forward (away from us) for 5 seconds.
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(0.5)
-                    .withVelocityY(0)
-                    .withRotationalRate(0)
-            )
-            .withTimeout(5.0),
-            // Finally idle for the rest of auton
-            drivetrain.applyRequest(() -> idle)
-        );
+        // final var idle = new SwerveRequest.Idle();
+        // return Commands.sequence(
+        //     // Reset our field centric heading to match the robot
+        //     // facing away from our alliance station wall (0 deg).
+        //     drivetrain.runOnce(() -> drivetrain.seedFieldCentric(Rotation2d.kZero)),
+        //     // Then slowly drive forward (away from us) for 5 seconds.
+        //     drivetrain.applyRequest(() ->
+        //         drive.withVelocityX(0.5)
+        //             .withVelocityY(0)
+        //             .withRotationalRate(0)
+        //     )
+        //     .withTimeout(5.0),
+        //     // Finally idle for the rest of auton
+        //     drivetrain.applyRequest(() -> idle)
+        // );
     }
 
     public Command aimAtTarget(CommandSwerveDrivetrain drivetrain) {
