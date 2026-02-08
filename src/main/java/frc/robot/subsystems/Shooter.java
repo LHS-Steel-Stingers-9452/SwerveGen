@@ -38,7 +38,7 @@ public class Shooter extends SubsystemBase {
 
   // Constants
   private final DCMotor dcMotor = DCMotor.getKrakenX60(1);
-  private final int canID = 16;
+  private final int canID = 17;
   private final double gearRatio = 1;
   private final double kP = .55; //started at 1
   private final double kI = 0;
