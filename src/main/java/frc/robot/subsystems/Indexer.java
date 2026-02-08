@@ -136,7 +136,7 @@ public class Indexer extends SubsystemBase {
       false, // Simulate gravity - Disable gravity for pivot
       Units.degreesToRadians(0) // Starting position (rad)
     );
-
+        
     motor2.setControl(new Follower(canID, MotorAlignmentValue.Aligned));
   }
 

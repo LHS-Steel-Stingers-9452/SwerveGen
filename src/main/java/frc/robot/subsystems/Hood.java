@@ -190,11 +190,8 @@ public class Hood extends SubsystemBase {
     return temperatureSignal.getValueAsDouble();
   }
 
-  public void setAngle(double angleDegrees) {
-    // Convert degrees to rotations
-    double angleRadians = Units.degreesToRadians(angleDegrees);
-    double positionRotations = angleRadians / (2.0 * Math.PI);
-    motor.setControl(positionRequest.withPosition(positionRotations));
+  public Command setPosition(double position) {
+    return run(() ->  motor.setControl(positionRequest.withPosition(position)));
   }
 
   public void setVelocity(double velocity) {

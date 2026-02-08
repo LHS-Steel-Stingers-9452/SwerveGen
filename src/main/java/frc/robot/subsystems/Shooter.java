@@ -13,9 +13,11 @@ import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 // import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 // import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.epilogue.Logged;
@@ -39,6 +41,7 @@ public class Shooter extends SubsystemBase {
   // Constants
   private final DCMotor dcMotor = DCMotor.getKrakenX60(1);
   private final int canID = 17;
+  private final int canID2 = 18;
   private final double gearRatio = 1;
   private final double kP = .55; //started at 1
   private final double kI = 0;
@@ -66,6 +69,8 @@ public class Shooter extends SubsystemBase {
   private final StatusSignal<Current> statorCurrentSignal;
   private final StatusSignal<Temperature> temperatureSignal;
 
+  private final TalonFX motor2;
+
   // Simulation
   private final SingleJointedArmSim pivotSim;
 
@@ -75,6 +80,7 @@ public class Shooter extends SubsystemBase {
   public Shooter() {
     // Initialize motor controller
     motor = new TalonFX(canID);
+    motor2 = new TalonFX(canID);
 
     // Create control requests
     positionRequest = new PositionVoltage(0).withSlot(0);
@@ -130,6 +136,8 @@ public class Shooter extends SubsystemBase {
       false, // Simulate gravity - Disable gravity for pivot
       Units.degreesToRadians(0) // Starting position (rad)
     );
+      //Second motor became opposed
+    motor2.setControl(new Follower(canID, MotorAlignmentValue.Opposed));
   }
 
   /**
@@ -191,9 +199,7 @@ public class Shooter extends SubsystemBase {
   }
 
 
-  public void setVelocity(double velocity) {
-    motor.setControl(velocityRequest.withVelocity(velocity));
-  }
+  
 
   /**
    * Set motor voltage directly.
@@ -219,7 +225,7 @@ public class Shooter extends SubsystemBase {
    * Creates a command to move the pivot at a specific velocity.
    * @return A command that moves the pivot at the specified velocity
    */
-  public Command moveAtVelocityCommand(double velocity) {
-    return run(() -> setVelocity(velocity));
+  public Command setVelocity(double velocity) {
+    return run(() ->  motor.setControl(velocityRequest.withVelocity(velocity)));
   }
 }
