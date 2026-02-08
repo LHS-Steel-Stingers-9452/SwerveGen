@@ -223,6 +223,9 @@ public class RobotContainer {
                     .andThen(new WaitCommand(0.10))
                     .andThen(funnel.stopFunnel().alongWith(intake.stopIntake()));
              */
+    public void autoInit(){
+                    drivetrain.seedFieldCentric();
+    }
 
     public Command getAutonomousCommand() {
         return autoChooser.getSelected();
