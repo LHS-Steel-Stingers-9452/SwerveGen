@@ -15,9 +15,7 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
-import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
 // import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.epilogue.Logged;
@@ -35,13 +33,12 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 /**
  * Pivot subsystem using TalonFX with Krakenx60 motor
  */
-@Logged(name = "Indexer")
-public class Indexer extends SubsystemBase {
+@Logged(name = "Hood")
+public class Hood extends SubsystemBase {
 
   // Constants
-  private final DCMotor dcMotor = DCMotor.getKrakenX44(2);
-  private final int canID = 12;
-  private final int canID2 = 13;
+  private final DCMotor dcMotor = DCMotor.getKrakenX60(1);
+  private final int canID = 11;
   private final double gearRatio = 1;
   private final double kP = 1; //started at 1
   private final double kI = 0;
@@ -69,18 +66,15 @@ public class Indexer extends SubsystemBase {
   private final StatusSignal<Current> statorCurrentSignal;
   private final StatusSignal<Temperature> temperatureSignal;
 
-  private final TalonFX motor2;
-
   // Simulation
   private final SingleJointedArmSim pivotSim;
 
   /**
    * Creates a new Pivot Subsystem.
    */
-  public Indexer() {
+  public Hood() {
     // Initialize motor controller
     motor = new TalonFX(canID);
-    motor2 = new TalonFX(canID2);
 
     // Create control requests
     positionRequest = new PositionVoltage(0).withSlot(0);
@@ -136,8 +130,6 @@ public class Indexer extends SubsystemBase {
       false, // Simulate gravity - Disable gravity for pivot
       Units.degreesToRadians(0) // Starting position (rad)
     );
-
-    motor2.setControl(new Follower(canID, MotorAlignmentValue.Aligned));
   }
 
   /**
@@ -198,6 +190,12 @@ public class Indexer extends SubsystemBase {
     return temperatureSignal.getValueAsDouble();
   }
 
+  public void setAngle(double angleDegrees) {
+    // Convert degrees to rotations
+    double angleRadians = Units.degreesToRadians(angleDegrees);
+    double positionRotations = angleRadians / (2.0 * Math.PI);
+    motor.setControl(positionRequest.withPosition(positionRotations));
+  }
 
   public void setVelocity(double velocity) {
     motor.setControl(velocityRequest.withVelocity(velocity));

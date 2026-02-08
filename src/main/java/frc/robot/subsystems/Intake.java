@@ -38,7 +38,7 @@ public class Intake extends SubsystemBase {
 
   // Constants
   private final DCMotor dcMotor = DCMotor.getKrakenX60(1);
-  private final int canID = 18;
+  private final int canID = 14;
   private final double gearRatio = 1;
   private final double kP = 1; //started at 1
   private final double kI = 0;

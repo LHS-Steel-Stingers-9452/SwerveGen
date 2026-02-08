@@ -38,7 +38,7 @@ public class Climber extends SubsystemBase {
 
   // Constants
   private final DCMotor dcMotor = DCMotor.getKrakenX60(1);
-  private final int canID = 20;
+  private final int canID = 10;  // Drive/steer motors are single digit 1-8, other motors start at)
   private final double gearRatio = 1;
   private final double kP = 1; //started at 1
   private final double kI = 0;
